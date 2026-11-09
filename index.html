@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0e1215">
+  <meta name="description" content="周一至周五居家力量训练。用可旋转的 3D 模型查看每个动作的标准、呼吸节奏和常见错误。">
+  <title>五日居家训练 · 动作实验室</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./pose.js"></script>
+  <script defer src="./workouts.js"></script>
+  <script defer src="./standing.js"></script>
+  <script defer src="./scene.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z M4 7.5l8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l12 7-12 7z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="3"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M6 6v12m12-11-8 5 8 5z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M18 6v12M6 7l8 5-8 5z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 2.5 5.8M4 12V5m0 7h7"/></symbol>
+    <symbol id="i-crosshair" viewBox="0 0 24 24"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4M12 9v6m-3-3h6"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M6 12h12m-6-6v12"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M6 18 18 6M8 6h10v10"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4 3 20h18L12 4Zm0 6v4m0 3v.1"/></symbol>
+    <symbol id="i-air" viewBox="0 0 24 24"><path d="M3 8h12a2.5 2.5 0 1 0-2.5-2.5M3 12h16a2 2 0 1 1-2 2m-14 2h8a2 2 0 1 1-2 2"/></symbol>
+  </svg>
+  <header class="topbar">
+    <div class="shell mast">
+      <a class="brand" href="#top"><span class="brand-icon"><svg><use href="#i-cube"/></svg></span><span>动作实验室<small>FORM LAB</small></span></a>
+      <nav aria-label="页面导航"><a href="#plan">周计划</a><a href="#lab">3D 拆解</a><a href="#standards">动作标准</a><a href="#references">参考资料</a></nav>
+    </div>
+  </header>
+  <main class="shell" id="top">
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <div class="eyebrow"><span></span> 居家力量训练 <i></i> 3D 动作库</div>
+        <h1 id="title">五日训练计划</h1>
+        <p>按训练日选动作。旋转模型、慢放或逐步暂停，检查站位、发力和呼吸。</p>
+      </div>
+      <div class="intro-mark" aria-hidden="true"><span>训练日</span><b>05</b><small>WEEKLY TRAINING</small></div>
+    </section>
+    <section class="weekly" id="plan" aria-labelledby="plan-title">
+      <div class="week-head"><h2 id="plan-title">选择训练日</h2><span>23 项训练安排</span></div>
+      <div class="weekdays" id="weekdays" role="group" aria-label="训练日"></div>
+      <div class="exercise-list" id="exercise-list" role="group" aria-label="当天的训练动作"></div>
+    </section>
+    <section class="lab" id="lab" aria-label="交互式动作拆解">
+      <div class="labhead">
+        <div class="labtitle"><svg><use href="#i-cube"/></svg><div><span class="lab-kicker">3D 动作拆解</span><h2 id="exercise-title">斜板俯卧撑</h2></div></div>
+        <div class="lab-actions">
+          <span id="exercise-dose" class="dose">周一 · 4 × 12</span>
+          <div class="segment" id="grip-control" role="group" aria-label="手距">
+            <button type="button" data-variant="standard" aria-pressed="true">标准手距</button>
+            <button type="button" data-variant="narrow" aria-pressed="false">窄距</button>
+          </div>
+          <div class="segment" id="side-control" role="group" aria-label="示范侧" hidden>
+            <button type="button" data-side="-1" aria-pressed="false">左侧</button>
+            <button type="button" data-side="1" aria-pressed="true">右侧</button>
+          </div>
+        </div>
+      </div>
+      <div class="labgrid">
+        <div class="stage-column">
+          <div class="stage" id="stage">
+            <canvas id="scene" role="img" aria-label="斜板俯卧撑 3D 模型：双手撑高台，脚尖着地。"></canvas>
+            <div class="viewtools">
+              <div class="viewgroup" role="group" aria-label="预设视角">
+                <button type="button" data-view="three" aria-pressed="true">斜视</button>
+                <button type="button" data-view="side" aria-pressed="false">侧视</button>
+                <button type="button" data-view="front" aria-pressed="false">正视</button>
+              </div>
+              <div class="cameratools">
+                <button type="button" id="zoom-out" title="缩小" aria-label="缩小模型"><svg><use href="#i-minus"/></svg></button>
+                <button type="button" id="zoom-in" title="放大" aria-label="放大模型"><svg><use href="#i-plus"/></svg></button>
+                <button type="button" id="reset-view" title="重置视角" aria-label="重置视角"><svg><use href="#i-reset"/></svg></button>
+              </div>
+            </div>
+            <div class="stagefoot"><span><svg><use href="#i-crosshair"/></svg> 拖动旋转</span><span class="scene-mode" id="scene-mode"><i></i> 标准动作</span></div>
+          </div>
+          <div class="transport">
+            <div class="playback">
+              <button class="play" id="play" type="button" aria-label="播放动作"><svg><use id="play-icon" href="#i-play"/></svg><span id="play-label">播放</span></button>
+              <button class="icon-btn" id="prev" type="button" title="上一步" aria-label="上一步"><svg><use href="#i-prev"/></svg></button>
+              <button class="icon-btn" id="next" type="button" title="下一步" aria-label="下一步"><svg><use href="#i-next"/></svg></button>
+            </div>
+            <label class="scrub"><span class="sr">动作进度</span><input type="range" min="0" max="1000" value="0" id="scrub"><output id="progress" for="scrub">0%</output></label>
+            <label class="speed"><span class="sr">播放速度</span><select id="speed"><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option></select></label>
+          </div>
+          <div class="steps" role="group" aria-label="跳到动作阶段">
+            <button type="button" data-step="0" aria-pressed="true"><small>01</small><span>准备支撑</span></button>
+            <button type="button" data-step="1" aria-pressed="false"><small>02</small><span>控制下放</span></button>
+            <button type="button" data-step="2" aria-pressed="false"><small>03</small><span>底部停顿</span></button>
+            <button type="button" data-step="3" aria-pressed="false"><small>04</small><span>推回起点</span></button>
+          </div>
+        </div>
+        <aside class="coach">
+          <div class="coach-top"><span class="eyebrow">当前阶段</span><span id="step-count">01 <em>/ 04</em></span></div>
+          <div class="coach-body" aria-live="polite" aria-atomic="true">
+            <h3 id="step-title">准备支撑</h3>
+            <p id="step-description">掌根压稳，脚尖撑地。收紧腹部和臀部，让头、肩、髋和脚跟保持一条斜线。</p>
+            <div class="breath"><svg><use href="#i-air"/></svg><span>呼吸</span><strong id="breath">自然呼吸</strong></div>
+            <ul id="step-cues"><li>双手比肩略宽，五指张开。</li><li>视线落在台面，后颈保持自然。</li></ul>
+          </div>
+          <div class="overlay-options">
+            <div class="small-label">观察辅助</div>
+            <label class="toggle"><span>动作标注</span><input type="checkbox" id="guides" checked><span class="switch"></span></label>
+            <label class="toggle"><span>目标肌群 <i></i></span><input type="checkbox" id="muscles" checked><span class="switch"></span></label>
+            <p class="muted overlay-note" id="muscle-note">橙色为胸部与上臂后侧的示意。</p>
+          </div>
+        </aside>
+      </div>
+      <div class="compare">
+        <div><h3>错误对照</h3><p id="compare-note" aria-live="polite">选一种常见错误，比较它和标准姿势的差别。</p></div>
+        <div class="errors" id="error-control" role="group" aria-label="错误姿势对照"></div>
+      </div>
+    </section>
+    <noscript><p class="warning">开启 JavaScript 后可操作 3D 模型。下方动作要点仍可阅读。</p></noscript>
+    <section class="content-section" id="standards" aria-labelledby="standards-title">
+      <div class="section-lead"><span class="eyebrow">动作标准</span><h2 id="standards-title">斜板俯卧撑 · 动作检查</h2><p class="muted" id="exercise-equipment">稳固高台 · 胸与肱三头肌</p></div>
+      <div class="checks" id="checks">
+        <article><span class="check-number">01 / 支撑</span><h3>先固定手和脚</h3><p>用稳固防滑的台面。标准手距略宽于肩；窄距把双手略向内收，选手腕和肩都舒服的位置，无需强行做成钻石手型。</p></article>
+        <article><span class="check-number">02 / 下放</span><h3>让胸口靠近台沿</h3><p>吸气弯肘，身体一起下降。标准手距可把上臂与躯干约 45° 当作提示；窄距让肘部更靠近身体。以能控制且无痛的幅度为准。</p></article>
+        <article><span class="check-number">03 / 推起</span><h3>胸和髋一起回升</h3><p>呼气推开台面，回到起始斜线。保持腹部和臀部发力，不耸肩，不靠腰借力，手肘伸直时避免猛顶。</p></article>
+      </div>
+      <div class="warning"><svg><use href="#i-alert"/></svg><p id="caution"><strong>开始前先试一下台面。</strong> 避免会滑、会翻或带轮子的支撑。如果维持不了对线，换更高的固定台面或缩小幅度；如果手腕、肘或肩出现疼痛，停止这一组。</p></div>
+      <p class="muted exercise-note" id="exercise-note" hidden></p>
+    </section>
+    <section class="content-section references" id="references" aria-labelledby="references-title">
+      <div class="section-lead"><span class="eyebrow">资料来源</span><h2 id="references-title">参考视频与动作指南</h2></div>
+      <div class="sources">
+        <a href="https://www.nasm.org/resource-center/exercise-library/incline-push-up" target="_blank" rel="noopener noreferrer"><span><small>动作依据 · NASM</small><strong>斜板俯卧撑动作指南与示范</strong></span><svg><use href="#i-arrow"/></svg></a>
+        <a href="https://www.nasm.org/resource-center/exercise-library/dumbbell-romanian-deadlift" target="_blank" rel="noopener noreferrer"><span><small>动作依据 · NASM</small><strong>哑铃罗马尼亚硬拉动作指南</strong></span><svg><use href="#i-arrow"/></svg></a>
+        <a href="https://www.acefitness.org/resources/everyone/exercise-library/equipment/dumbbells/" target="_blank" rel="noopener noreferrer"><span><small>动作依据 · ACE</small><strong>哑铃训练动作库</strong></span><svg><use href="#i-arrow"/></svg></a>
+        <a href="https://www.bilibili.com/video/BV1CSoKBaEgK/" target="_blank" rel="noopener noreferrer"><span><small>延伸观看 · 哔哩哔哩</small><strong>凯圣王 × 谭成义：跟练胸肩三头</strong></span><svg><use href="#i-arrow"/></svg></a>
+        <a href="https://www.bilibili.com/video/BV1FL2MBME3G/" target="_blank" rel="noopener noreferrer"><span><small>延伸观看 · 谭成义</small><strong>肩后束训练以及热身动作教学</strong></span><svg><use href="#i-arrow"/></svg></a>
+        <a href="https://www.douyin.com/video/7696188357169563492" target="_blank" rel="noopener noreferrer"><span><small>延伸观看 · 抖音</small><strong>谭师居家四分化之哑铃前平举</strong></span><svg><use href="#i-arrow"/></svg></a>
+      </div>
+      <p class="muted source-note">3D 模型为动作示意，关节角度和比例供观察动作轨迹。跟练视频作为延伸观看。</p>
+    </section>
+  </main>
+  <footer class="shell"><span>动作实验室 / FORM LAB</span><a href="#top">回到顶部 ↑</a></footer>
+</body>
+</html>

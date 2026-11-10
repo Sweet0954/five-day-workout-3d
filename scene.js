@@ -5,7 +5,8 @@
   const cameraPresets = { three:[.47,.37], side:[0,.12], front:[1.50,.55] };
   const standingPresets = { three:[.78,.22], side:[.02,.12], front:[1.56,.13] };
   const light = unit([-.27,.86,.65]);
-  const skin = [135,155,168], dark = [66,79,91], warm = [222,97,51];
+  // Warm body tones stay distinct from the cool blue support, including in shadow.
+  const skin = [224,194,160], dark = [113,87,105], warm = [222,97,51];
   const shoe = [31,40,47], sole = [127,146,152];
 
   function setup(canvas) {
@@ -101,16 +102,16 @@
     function platform({front:f,back:b,top:y,halfWidth:z}=bench) {
       for(const s of sides) {
         const p=z*.77*s;
-        box(f+.065,b-.065,.015,.065,p-.06,p+.06,[52,66,74]);
-        for(const x of [f+.14,b-.14]) box(x-.043,x+.043,.04,y-.074,p-.043,p+.043,[63,79,86]);
+        box(f+.065,b-.065,.015,.065,p-.06,p+.06,[25,53,70]);
+        for(const x of [f+.14,b-.14]) box(x-.043,x+.043,.04,y-.074,p-.043,p+.043,[33,70,91]);
       }
-      box(f+.025,b-.025,y-.111,y-.065,-z+.02,z-.02,[44,55,64]);
-      box(f,b,y-.069,y-.009,-z,z,[82,98,105]);
-      box(f+.007,b-.007,y-.012,y,-z+.008,z-.008,[107,122,126]);
-      box(f-.002,f+.001,y-.060,y-.052,-z+.015,z-.015,[187,103,62]);
+      box(f+.025,b-.025,y-.111,y-.065,-z+.02,z-.02,[24,49,66]);
+      box(f,b,y-.069,y-.009,-z,z,[34,88,122]);
+      box(f+.007,b-.007,y-.012,y,-z+.008,z-.008,[49,119,158]);
+      box(f-.002,f+.001,y-.060,y-.052,-z+.015,z-.015,[115,189,218]);
       for(const s of sides) {
         const q=z*s;
-        box(f+.047,b-.047,y-.062,y-.056,q-.001,q+.001,[118,136,143]);
+        box(f+.047,b-.047,y-.062,y-.056,q-.001,q+.001,[88,155,187]);
       }
     }
     function athlete(p, highlight) {
@@ -122,7 +123,7 @@
         const point = (v,z) => add(v,[0,0,z*s]);
         const hip = point(p.hip,.104), knee = point(p.knee,.120), ankle = point(p.ankle,.125);
         limb(hip,knee,.107,.060,dark);
-        limb(knee,ankle,.064,.037,[78,94,105]);
+        limb(knee,ankle,.064,.037,skin);
         const shoeEnd=point([-1.295,.042,0],.125), shoeStart=point([-1.161,.186,0],.125);
         ellipsoid(shoeStart,shoeEnd,.053,.056,shoe,{n:16});
         ellipsoid(add(shoeStart,[-.032,.008,0]),add(shoeEnd,[-.012,-.032,0]),.020,.050,sole,{n:14});
@@ -135,7 +136,7 @@
       limb(p.shoulder,p.neck,.072,.062,skin);
       const faceDown = [p.neckAxis[1],-p.neckAxis[0],0];
       const headA=add(p.head,mul(p.neckAxis,-.092)), headB=add(p.head,mul(p.neckAxis,.105));
-      ellipsoid(headA,headB,.080,.072,[143,161,171],{u:faceDown,v:lat,n:24,
+      ellipsoid(headA,headB,.080,.072,skin,{u:faceDown,v:lat,n:24,
         paint:(t,k)=>t>.31 && fromFront(k)>(t>.70?1.05:1.75)?[56,67,75]:null});
       ellipsoid(add(p.head,mul(faceDown,.066)),add(add(p.head,mul(p.neckAxis,.026)),mul(faceDown,.10)),.018,.014,skin,{n:10});
       for(const s of sides) {
@@ -146,12 +147,12 @@
         const armBack=unit(sub(back,mul(armAxis,dot(armAxis,back))));
         limb(a.shoulder,a.elbow,.083,.047,skin,{u:armBack,n:22,
           paint:(t,k)=>highlight && t>.12 && t<.70 && fromFront(k)<(t<.40?1.05:.74)?warm:null});
-        limb(a.elbow,a.wrist,.054,.030,[141,158,168]);
+        limb(a.elbow,a.wrist,.054,.030,skin);
         const palm = [a.wrist[0]+.028,bench.top+.025,a.wrist[2]];
-        ellipsoid(add(palm,[-.055,0,0]),add(palm,[.080,0,0]),.025,.047,[164,178,182],{n:16});
+        ellipsoid(add(palm,[-.055,0,0]),add(palm,[.080,0,0]),.025,.047,skin,{n:16});
         for(let j=0;j<4;j++){
           const f=add(palm,[.054,-.006,(j-1.5)*.018]);
-          ellipsoid(f,add(f,[.054-Math.abs(j-1)*.006,-.005,0]),.011,.009,[159,175,181],{n:8});
+          ellipsoid(f,add(f,[.054-Math.abs(j-1)*.006,-.005,0]),.011,.009,skin,{n:8});
         }
       }
     }
@@ -184,7 +185,7 @@
           {u:[0,0,1],paint:band(id==='rdl'?Math.PI/2:Math.PI*1.5,.14,.72,1.02)}:{};
         const calfColor=highlight&&id==='calf'?{u:[0,0,1],paint:band(Math.PI/2,.12,.72,1.13)}:{};
         limb(leg.hip,leg.knee,.102,.058,dark,thighColor);
-        limb(leg.knee,leg.ankle,.068,.034,[72,86,96],calfColor);
+        limb(leg.knee,leg.ankle,.068,.034,skin,calfColor);
         const soleHeel=add(leg.ankle,[-.066,-.060,0]);
         ellipsoid(add(soleHeel,[-.010,.015,0]),add(leg.toe,[.023,.013,0]),.041,.061,shoe,{n:16});
         ellipsoid(add(soleHeel,[0,-.014,0]),add(leg.toe,[.022,-.014,0]),.013,.062,sole,{n:14});
@@ -202,7 +203,7 @@
       limb(p.shoulder,p.neck,.069,.057,skin);
       const headFront=cross(p.headAxis,lateral);
       const headA=add(p.head,mul(p.headAxis,-.100)), headB=add(p.head,mul(p.headAxis,.107));
-      ellipsoid(headA,headB,.078,.072,[143,161,171],{u:headFront,v:lateral,n:24,
+      ellipsoid(headA,headB,.078,.072,skin,{u:headFront,v:lateral,n:24,
         paint:(t,k)=>t>.35 && !near(k,0,t>.70?1.08:1.79)?[56,67,75]:null});
       ellipsoid(add(p.head,mul(headFront,.067)),add(add(p.head,mul(p.headAxis,.022)),mul(headFront,.104)),
         .018,.014,skin,{n:10});
@@ -223,10 +224,10 @@
         limb(a.shoulder,a.elbow,.077,.045,skin,{
           n:20,u:surface,paint:highlight&&(isBicep||isTricep)?band(0,.15,.78,1.1):undefined
         });
-        limb(a.elbow,a.wrist,.050,.031,[137,157,166]);
+        limb(a.elbow,a.wrist,.050,.031,skin);
         const handDir=a.support?[1,-.6,0]:unit(sub(a.wrist,a.elbow));
         const hand=add(a.wrist,mul(handDir,.035));
-        ellipsoid(add(a.wrist,mul(handDir,-.025)),add(hand,mul(handDir,.043)),.033,.036,[157,173,178],{n:14});
+        ellipsoid(add(a.wrist,mul(handDir,-.025)),add(hand,mul(handDir,.043)),.033,.036,skin,{n:14});
         if(a.weight) dumbbell(hand,a.grip);
       }
       if(p.overhead) dumbbell(p.overhead.center,p.overhead.axis);

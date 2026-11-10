@@ -12,7 +12,7 @@
   function setup(canvas) {
     const ctx = canvas.getContext('2d');
     let az = cameraPresets.three[0], el = cameraPresets.three[1], zoom = 1;
-    let w,h,camera,right,up,center,scale,faces;
+    let w,h,camera,right,up,center,scale,faces,supportY;
     const flat = (p,r,d) => [dot(p,r),dot(p,d)];
     function project(p) {
       const q = sub(p,center), depth = dot(q,camera), k = scale * 5.6 / (5.6-depth);
@@ -24,8 +24,31 @@
       if (dot(n,sub(add(center,mul(camera,5.6)),mid)) <= 0) return;
       const intensity = .58 + .43 * Math.max(0,dot(n,light)) + .08 * Math.max(0,n[2]);
       const rgb = color.map(x => Math.min(255,Math.round(x*intensity+5)));
-      const projected = points.map(project);
-      faces.push({p:projected,z:projected.reduce((s,x)=>s+x[2],0)/points.length,c:'rgb('+rgb.join(',')+')'});
+      // A large tabletop's average depth can be nearer than a palm above it.
+      // Split at the support plane first: the camera is always above this plane,
+      // so its upper half-space must paint after the surface and lower half.
+      const above = supportY != null && points.some(p=>p[1]>supportY+1e-8);
+      const below = supportY != null && points.some(p=>p[1]<supportY-1e-8);
+      const parts = above && below
+        ? [{points:clipSupport(points,false),layer:0},{points:clipSupport(points,true),layer:1}]
+        : [{points,layer:above?1:0}];
+      for(const part of parts) {
+        if(part.points.length<3) continue;
+        const projected = part.points.map(project);
+        faces.push({p:projected,z:projected.reduce((s,x)=>s+x[2],0)/projected.length,
+          layer:part.layer,c:'rgb('+rgb.join(',')+')'});
+      }
+    }
+    function clipSupport(points,upper) {
+      const result=[];
+      for(let i=0;i<points.length;i++) {
+        const a=points[i], b=points[(i+1)%points.length];
+        const insideA=upper?a[1]>=supportY:a[1]<=supportY;
+        const insideB=upper?b[1]>=supportY:b[1]<=supportY;
+        if(insideA) result.push(a);
+        if(insideA!==insideB) result.push(mix(a,b,(supportY-a[1])/(b[1]-a[1])));
+      }
+      return result;
     }
     function rings(a,b,profile,color,{u,v,n=22,paint,bow} = {}) {
       const d = unit(sub(b,a));
@@ -290,18 +313,22 @@
       const standing=Boolean(state.rig);
       center=standing?[.02,['press','overhead'].includes(state.rig)?1.06:.91,0]:[-.25,.54,0];
       scale=(standing?Math.min(w*.48,h*.395):Math.min(w*.395,h*.64))*zoom;
-      ground();faces=[];
+      ground();faces=[];supportY=null;
       let p;
       if(standing) {
         p=StandingPose.pose(state.rig,state.progress,state.side,state.error==='none'?'':state.error);
-        if(p.support) platform({front:.42,back:.97,top:StandingPose.supportHeight,halfWidth:.47});
+        if(p.support) {
+          supportY=StandingPose.supportHeight;
+          platform({front:.42,back:.97,top:supportY,halfWidth:.47});
+        }
         standingAthlete(p,state.rig,state.muscles);
       } else {
+        supportY=bench.top;
         platform();
         p=pose(state.progress,state.variant,state.error);
         athlete(p,state.muscles);
       }
-      faces.sort((a,b)=>a.z-b.z);
+      faces.sort((a,b)=>a.layer-b.layer || a.z-b.z);
       for(const f of faces) {
         ctx.beginPath();ctx.moveTo(f.p[0][0],f.p[0][1]);
         for(const pt of f.p.slice(1)) ctx.lineTo(pt[0],pt[1]);
